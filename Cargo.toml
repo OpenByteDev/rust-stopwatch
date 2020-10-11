@@ -1,8 +1,8 @@
 [package]
 
 name = "stopwatch"
-version = "0.0.7"
-authors = ["Chucky Ellison <cme@freefour.com>"]
+version = "0.1.0"
+authors = ["Chucky Ellison <cme@freefour.com>", "Joël Lupien <jojolepro@jojolepro.com"]
 
 description = "A stopwatch library for timing things."
 repository = "https://github.com/ellisonch/rust-stopwatch"
@@ -11,4 +11,4 @@ keywords = ["stopwatch", "timing"]
 license = "MIT"
 
 [dependencies]
-num = "0.1.32"
+num = "0.3.0"
