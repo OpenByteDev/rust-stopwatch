@@ -2,120 +2,122 @@ use std::default::Default;
 use std::fmt;
 use std::time::{Duration, Instant};
 
-#[derive(Clone, Copy)]
-pub struct Stopwatch {
-	/// The time the stopwatch was started last, if ever.
-	start_time: Option<Instant>,
-	/// The time the stopwatch was split last, if ever.
-	split_time: Option<Instant>,
-	/// The time elapsed while the stopwatch was running (between start() and stop()).
-	elapsed: Duration,
+// default zero
+// can start
+// can check time
+// can split
+// can temporarily see split time
+// can check time since start
+// can check all splits times
+// can stop
+// can check elapsed time until stop
+// can check all splits
+//
+// [start]...[split1]...[split2]...[pause]   [start]...[split3]
+// 
+// total / elapsed since start
+// [                                     ] + [                ]
+
+#[derive(Clone, Debug)]
+pub struct TimeSplit {
+    start: Instant,
+    stop: Option<Instant>,
 }
 
-impl Default for Stopwatch {
-	fn default() -> Stopwatch {
-		Stopwatch {
-			start_time: None,
-			split_time: None,
-			elapsed: Duration::from_secs(0),
-		}
-	}
+impl Into<Duration> for TimeSplit {
+    fn into(self) -> Duration {
+        if let Some(stop) = self.stop {
+            stop - self.start
+        } else {
+            self.start.elapsed()
+        }
+    }
+}
+
+// if your last time split doesn't have a stop time, you are still running
+
+/// A stopwatch used to calculate time differences.
+#[derive(Clone, Default, Debug)]
+pub struct Stopwatch {
+    /// The time the stopwatch was split last, if ever.
+    splits: Vec<TimeSplit>,
+    /// The time elapsed while the stopwatch was running (between start() and stop()).
+    elapsed: Duration,
 }
 
 impl fmt::Display for Stopwatch {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		return write!(f, "{}ms", self.elapsed_ms());
-	}
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        return write!(f, "{}s", self.elapsed().as_secs_f64());
+    }
 }
 
 impl Stopwatch {
-	/// Returns a new stopwatch.
-	pub fn new() -> Stopwatch {
-		let sw: Stopwatch = Default::default();
-		return sw;
-	}
+    /// Creates a new `Stopwatch`.
+    pub fn new() -> Stopwatch {
+        Default::default()
+    }
 
-	/// Returns a new stopwatch which will immediately be started.
-	pub fn start_new() -> Stopwatch {
-		let mut sw = Stopwatch::new();
-		sw.start();
-		return sw;
-	}
+    /// Starts the stopwatch.
+    pub fn start(&mut self) {
+        self.start_time = Some(Instant::now());
+    }
 
-	/// Starts the stopwatch.
-	pub fn start(&mut self) {
-		self.start_time = Some(Instant::now());
-	}
+    /// Stops the stopwatch without resetting it.
+    pub fn stop(&mut self) -> Duration {
+        self.elapsed = self.elapsed();
+        self.start_time = None;
+        self.splits.clear();
+        self.elapsed
+    }
 
-	/// Stops the stopwatch.
-	pub fn stop(&mut self) {
-		self.elapsed = self.elapsed();
-		self.start_time = None;
-		self.split_time = None;
-	}
+    /// Resets all counters and stops the stopwatch.
+    pub fn reset(&mut self) {
+        self.elapsed = Duration::from_secs(0);
+        self.start_time = None;
+        self.splits.clear();
+    }
 
-	/// Resets all counters and stops the stopwatch.
-	pub fn reset(&mut self) {
-		self.elapsed = Duration::from_secs(0);
-		self.start_time = None;
-		self.split_time = None;
-	}
+    /// Resets and starts the stopwatch again.
+    pub fn restart(&mut self) {
+        self.reset();
+        self.start();
+    }
 
-	/// Resets and starts the stopwatch again.
-	pub fn restart(&mut self) {
-		self.reset();
-		self.start();
-	}
+    /// Returns whether the stopwatch is running.
+    pub fn is_running(&self) -> bool {
+        return self.start_time.is_some();
+    }
 
-	/// Returns whether the stopwatch is running.
-	pub fn is_running(&self) -> bool {
-		return self.start_time.is_some();
-	}
+    /// Returns the elapsed time since the start of the stopwatch.
+    pub fn elapsed(&self) -> Duration {
+        match self.start_time {
+            // stopwatch is running
+            Some(t1) => {
+                return t1.elapsed() + self.elapsed;
+            }
+            // stopwatch is not running
+            None => {
+                return self.elapsed;
+            }
+        }
+    }
 
-	/// Returns the elapsed time since the start of the stopwatch.
-	pub fn elapsed(&self) -> Duration {
-		match self.start_time {
-			// stopwatch is running
-			Some(t1) => {
-				return t1.elapsed() + self.elapsed;
-			}
-			// stopwatch is not running
-			None => {
-				return self.elapsed;
-			}
-		}
-	}
-
-	/// Returns the elapsed time since the start of the stopwatch in milliseconds.
-	pub fn elapsed_ms(&self) -> i64 {
-		let dur = self.elapsed();
-		return (dur.as_secs() * 1000 + (dur.subsec_nanos() / 1000000) as u64) as i64;
-	}
-
-	/// Returns the elapsed time since last split or start/restart.
-	///
-	/// If the stopwatch is in stopped state this will always return a zero Duration.
-	pub fn elapsed_split(&mut self) -> Duration {
-		match self.start_time {
-			// stopwatch is running
-			Some(start) => {
-				let res = match self.split_time {
-					Some(split) => split.elapsed(),
-					None => start.elapsed(),
-				};
-				self.split_time = Some(Instant::now());
-				res
-			}
-			// stopwatch is not running
-			None => Duration::from_secs(0),
-		}
-	}
-
-	/// Returns the elapsed time since last split or start/restart in milliseconds.
-	///
-	/// If the stopwatch is in stopped state this will always return zero.
-	pub fn elapsed_split_ms(&mut self) -> i64 {
-		let dur = self.elapsed_split();
-		return (dur.as_secs() * 1000 + (dur.subsec_nanos() / 1_000_000) as u64) as i64;
-	}
+    /// Returns the elapsed time since last split or start/restart.
+    ///
+    /// If the stopwatch is in stopped state this will always return a zero Duration.
+    pub fn split(&mut self) -> Duration {
+        match self.start_time {
+            // stopwatch is running
+            Some(start) => {
+                let res = match self.splits.last() {
+                    Some(split) => split.elapsed(),
+                    None => start.elapsed(),
+                };
+                self.splits.push(Instant::now());
+                res
+            }
+            // stopwatch is not running
+            None => Duration::from_secs(0),
+        }
+    }
 }
