@@ -1,14 +1,10 @@
 [package]
-
-name = "stopwatch"
-version = "0.1.0"
+name = "stopwatch2"
+version = "2.0.0"
 authors = ["Chucky Ellison <cme@freefour.com>", "Joël Lupien <jojolepro@jojolepro.com"]
-
-description = "A stopwatch library for timing things."
-repository = "https://github.com/ellisonch/rust-stopwatch"
+description = "A stopwatch library for timing things. A rewrite and simplification of the original stopwatch crate."
+repository = "https://github.com/jojolepro/rust-stopwatch"
 readme = "README.md"
 keywords = ["stopwatch", "timing"]
 license = "MIT"
 
-[dependencies]
-num = "0.3.0"
