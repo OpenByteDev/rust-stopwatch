@@ -22,8 +22,6 @@ impl Into<Duration> for TimeSpan {
     }
 }
 
-// if your last time span doesn't have a stop time, you are still running
-
 /// A stopwatch used to calculate time differences.
 /// # Example
 /// ```rust
@@ -45,7 +43,7 @@ impl Into<Duration> for TimeSpan {
 /// ```
 #[derive(Clone, Default, Debug)]
 pub struct Stopwatch {
-    /// All time spans that this stopwatch has run or is running.
+    /// All the time spans that this stopwatch has been or is still running.
     /// Only the last timespan is allowed to have no stop value, which means it
     /// is still active.
     pub spans: Vec<TimeSpan>,
