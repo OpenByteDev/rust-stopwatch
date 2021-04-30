@@ -1,38 +1,53 @@
-# rust-stopwatch
-This is a simple module used to time things in Rust.
+<a href="https://crates.io/crates/stopwatch2">
+    <img src="https://img.shields.io/crates/v/stopwatch2.svg" alt="Stopwatch2" />
+</a>
 
-[![Build Status](https://travis-ci.org/ellisonch/rust-stopwatch.svg?branch=master)](https://travis-ci.org/ellisonch/rust-stopwatch)
+# Stopwatch V2
+Support an Open Source Developer! :hearts:  
+[![Become a patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/jojolepro)
 
-## Usage
-To use, add the following line to `Cargo.toml` under `[dependencies]`:
-```toml
+Read the [documentation](https://docs.rs/stopwatch2).
 
-stopwatch = "0.0.7"
+This crate is a simplified version of [the work of ellisonch](https://github.com/ellisonch/rust-stopwatch).
+
+# Features
+
+* Adds a simple stopwatch.
+* Can use multiple splits, even with pauses between them!
+* Simple to use with clear documentation.
+
+# Usage
+Add the following to you Cargo.toml file:
+
 ```
-or alternatively,
-```toml
-stopwatch = { git = "https://github.com/ellisonch/rust-stopwatch.git" }
+stopwatch2 = "*"
 ```
 
-## Example
+Use the stopwatch like so:
 ```rust
-extern crate stopwatch;
-use stopwatch::{Stopwatch};
-// ...
-let sw = Stopwatch::start_new();
-// do something that takes some time
-println!("Thing took {}ms", sw.elapsed_ms());
-```
+use stopwatch2::*;
 
-## Methods
-```rust
-fn new() -> Stopwatch
-fn start_new() -> Stopwatch
-fn start(&mut self)
-fn stop(&mut self)
-fn reset(&mut self)
-fn restart(&mut self)
-fn is_running(&self) -> bool
-fn elapsed(&self) -> Duration
-fn elapsed_ms(&self) -> i64
+fn main() {
+    let mut s = Stopwatch::default();
+    s.start(); // Starts the stopwatch.
+    s.start(); // Creates a new time span, which are commonly called "splits".
+    s.stop(); // Stops the stopwatch.
+    println!("{}", s); // Prints the total time.
+    println!("{:?}", s); // Prints the different time spans as debug information.
+    let total_time = s.elapsed(); // returns the total time as a Duration.
+    for span in &s.spans {
+        // Prints all contained time spans.
+        println!("{:?} -> {:?}", span.start, span.stop);
+    }
+    s.spans.clear(); // Reset the stopwatch.
+    println!("{}", s); // Prints the total time.
+    println!("{:?}", s); // Prints the different time spans as debug information.
+}
 ```
+### Maintainer Information
+
+* Maintainer: Jojolepro
+* Contact: jojolepro [at] jojolepro [dot] com
+* Website: [jojolepro.com](https://jojolepro.com)
+* Patreon: [patreon](https://patreon.com/jojolepro)
+

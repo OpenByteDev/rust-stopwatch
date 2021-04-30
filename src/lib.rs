@@ -28,15 +28,20 @@ impl Into<Duration> for TimeSpan {
 /// # Example
 /// ```rust
 /// use stopwatch2::*;
+///
 /// let mut s = Stopwatch::default();
 /// s.start(); // Starts the stopwatch.
-/// s.start(); // Creates a new span.
+/// s.start(); // Creates a new time span, which are commonly called "splits".
 /// s.stop(); // Stops the stopwatch.
 /// println!("{}", s); // Prints the total time.
-/// println!("{:?}", s); // Prints the different time spans.
+/// println!("{:?}", s); // Prints the different time spans as debug information.
+/// let total_time = s.elapsed(); // returns the total time as a Duration.
+/// for span in &s.spans {
+///     println!("{:?} -> {:?}", span.start, span.stop);
+/// }
 /// s.spans.clear(); // Reset the stopwatch.
 /// println!("{}", s); // Prints the total time.
-/// println!("{:?}", s); // Prints the different time spans.
+/// println!("{:?}", s); // Prints the different time spans as debug information.
 /// ```
 #[derive(Clone, Default, Debug)]
 pub struct Stopwatch {
