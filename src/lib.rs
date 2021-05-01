@@ -92,14 +92,20 @@ impl Stopwatch {
     /// Returns the total elapsed time accumulated inside of this stopwatch.
     pub fn elapsed(&self) -> Duration {
         // better way to do the conversion here?
-        self.spans.iter().map(|s| {let d: Duration = s.clone().into(); d}).sum()
+        self.spans
+            .iter()
+            .map(|s| {
+                let d: Duration = s.clone().into();
+                d
+            })
+            .sum()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
     use crate::*;
+    use std::time::Duration;
 
     static SLEEP_MS: u64 = 50;
     static TOLERANCE_PERCENTAGE: f64 = 0.3;
@@ -114,7 +120,7 @@ mod tests {
         assert_eq!(sw.spans.len(), 1000);
         assert!(sw.spans.last().unwrap().stop.is_some());
     }
-    
+
     #[test]
     fn elapsed_none() {
         let mut sw = Stopwatch::default();
@@ -122,7 +128,7 @@ mod tests {
         sw.stop();
         assert_eq!(sw.elapsed().as_secs_f32(), 0.0);
     }
-    
+
     #[test]
     fn elapsed_ms() {
         let mut sw = Stopwatch::default();
@@ -130,7 +136,7 @@ mod tests {
         sleep_ms(SLEEP_MS);
         assert_duration_near(sw.elapsed(), SLEEP_MS);
     }
-    
+
     #[test]
     fn stop() {
         let mut sw = Stopwatch::default();
@@ -141,7 +147,7 @@ mod tests {
         sleep_ms(SLEEP_MS);
         assert_duration_near(sw.elapsed(), SLEEP_MS);
     }
-    
+
     #[test]
     fn resume_once() {
         let mut sw = Stopwatch::default();
@@ -157,7 +163,7 @@ mod tests {
         sleep_ms(SLEEP_MS);
         assert_duration_near(sw.elapsed(), 2 * SLEEP_MS);
     }
-    
+
     #[test]
     fn resume_twice() {
         let mut sw = Stopwatch::default();
@@ -178,7 +184,7 @@ mod tests {
         sleep_ms(SLEEP_MS);
         assert_duration_near(sw.elapsed(), 3 * SLEEP_MS);
     }
-    
+
     #[test]
     fn is_running() {
         let mut sw = Stopwatch::default();
@@ -188,7 +194,7 @@ mod tests {
         sw.stop();
         assert!(!sw.is_running());
     }
-    
+
     #[test]
     fn reset() {
         let mut sw = Stopwatch::default();
@@ -200,22 +206,21 @@ mod tests {
         sleep_ms(SLEEP_MS);
         assert_duration_near(sw.elapsed(), SLEEP_MS);
     }
-    
+
     // helpers
     fn sleep_ms(ms: u64) {
         std::thread::sleep(Duration::from_millis(ms))
     }
-    
+
     fn assert_near(x: i64, y: i64, tolerance: u64) {
         let diff = (x - y).abs() as u64;
         if diff > tolerance {
             panic!("Expected {:?}, got {:?}", x, y);
         }
     }
-    
+
     fn assert_duration_near(duration: Duration, elapsed: u64) {
         let tolerance_value = (TOLERANCE_PERCENTAGE * elapsed as f64) as u64;
         assert_near(elapsed as i64, duration.as_millis() as i64, tolerance_value);
     }
 }
-
