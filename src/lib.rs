@@ -12,12 +12,12 @@ pub struct TimeSpan {
 }
 
 /// Converts a TimeSpan into a Duration.
-impl Into<Duration> for TimeSpan {
-    fn into(self) -> Duration {
-        if let Some(stop) = self.stop {
-            stop - self.start
+impl From<TimeSpan> for Duration {
+    fn from(val: TimeSpan) -> Self {
+        if let Some(stop) = val.stop {
+            stop - val.start
         } else {
-            self.start.elapsed()
+            val.start.elapsed()
         }
     }
 }
@@ -52,7 +52,7 @@ pub struct Stopwatch {
 /// Prints the total time this Stopwatch has run.
 impl fmt::Display for Stopwatch {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        return write!(f, "{}s", self.elapsed().as_secs_f64());
+        write!(f, "{}s", self.elapsed().as_secs_f64())
     }
 }
 
@@ -69,7 +69,7 @@ impl Stopwatch {
             start: Instant::now(),
             stop: None,
         });
-        return ret;
+        ret
     }
 
     /// Stops the stopwatch without resetting it.
@@ -79,7 +79,7 @@ impl Stopwatch {
             self.spans.last_mut().unwrap().stop = Some(Instant::now());
             ret = Some(self.spans.last().unwrap().clone());
         }
-        return ret;
+        ret
     }
 
     /// Returns whether the stopwatch is running.
@@ -213,9 +213,9 @@ mod tests {
     }
 
     fn assert_near(x: i64, y: i64, tolerance: u64) {
-        let diff = (x - y).abs() as u64;
+        let diff = (x - y).unsigned_abs();
         if diff > tolerance {
-            panic!("Expected {:?}, got {:?}", x, y);
+            panic!("Expected {x:?}, got {y:?}");
         }
     }
 
